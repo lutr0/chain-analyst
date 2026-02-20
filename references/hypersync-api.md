@@ -216,6 +216,30 @@ Full list: https://docs.envio.dev/docs/HyperSync/hypersync-supported-networks
 
 ## Query Recipes
 
+### ERC20 Transfers To an Address
+
+Replace `0xRECIPIENT` with the 40-hex address, left-padded to 32 bytes:
+
+```json
+{
+  "from_block": 0,
+  "logs": [{
+    "topics": [
+      ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
+      [],
+      ["0x000000000000000000000000RECIPIENT"]
+    ]
+  }],
+  "field_selection": {
+    "log": ["block_number", "transaction_hash", "address", "data", "topic0", "topic1", "topic2"],
+    "block": ["number", "timestamp"],
+    "transaction": ["hash", "from", "to", "value"]
+  }
+}
+```
+
+To query transfers **from** an address instead, move the padded address to `topics[1]` and leave `topics[2]` as `[]`.
+
 ### All Uniswap V2 Swaps on a Pool
 
 ```json

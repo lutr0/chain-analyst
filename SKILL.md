@@ -69,6 +69,31 @@ Use this decision order:
 3. Use `query-contract.sh` for latest state reads.
 4. Use `multicall.sh` when reading many contracts/methods in one run.
 
+## Common HyperSync Patterns
+
+HyperSync can query across millions of blocks in one request. Build queries using three top-level filters — `transactions`, `logs`, and `traces` — each narrowed by fields like address, topic, from/to.
+
+**Transaction queries:**
+
+- **All transactions for an address**: filter `transactions.from` or `transactions.to` (or both as separate entries for union)
+- **Transactions to a specific contract**: filter `transactions.to` = contract address
+
+**Log queries** (ERC20 `Transfer(address,address,uint256)` emits topic0 = signature hash, topic1 = from, topic2 = to — pad addresses to 32 bytes):
+
+- **ERC20 transfers to an address**: filter `topics[0]` = Transfer hash, `topics[2]` = padded recipient
+- **ERC20 transfers from an address**: filter `topics[0]` = Transfer hash, `topics[1]` = padded sender
+- **USDC/specific token transfers**: add `logs.address` = token contract to any Transfer filter
+- **Swap history on a pool**: filter `topics[0]` = Swap event hash, `logs.address` = pool
+- **NFT mints**: filter `topics[0]` = Transfer hash, `topics[1]` = zero address
+- **All events on a contract**: filter `logs.address` = contract (no topic filter)
+
+**Trace queries:**
+
+- **Internal call traces to a contract**: filter `traces.to` = contract, `traces.call_type` = `["call", "delegatecall"]`
+- **Contract creation traces**: filter `traces.kind` = `["create"]`
+
+See `references/hypersync-api.md` for full query structure, field names, and ready-made recipes.
+
 ## Use Network Names
 
 Built-in networks (with aliases): `ethereum` (`eth`, `mainnet`), `base`, `arbitrum`, `optimism` (`op`), `polygon` (`matic`).
