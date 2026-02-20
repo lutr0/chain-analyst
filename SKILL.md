@@ -1,8 +1,8 @@
 ---
 name: chain-analyst
-description: Analyze onchain activity across EVM networks using HyperSync for historical data, RPC for current state, Etherscan for ABI lookup, and CoinGecko for pricing. Use when users ask to decode transactions, trace token flow, query contract state, compute balances from logs, identify event emitters, or produce reproducible protocol-level analysis with commands and evidence.
+description: "Analyze onchain activity across EVM networks using HyperSync for historical data, RPC for current state, Etherscan for ABI lookup, and CoinGecko for pricing. Use when users ask to decode transactions, trace token flow, query contract state, compute balances from logs, identify event emitters, or produce reproducible protocol-level analysis with commands and evidence."
 license: MIT
-compatibility: Requires bash, curl, jq, bc. Optional: cast (Foundry), node with viem. Needs internet access for HyperSync, Etherscan, and CoinGecko APIs.
+compatibility: "Requires bash, curl, jq, bc. Optional: cast (Foundry), node with viem. Needs internet access for HyperSync, Etherscan, and CoinGecko APIs."
 metadata:
   author: lutr0
   version: "1.0.0"
