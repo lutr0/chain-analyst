@@ -4,9 +4,28 @@ Agent skill for EVM blockchain lookups, onchain investigations, and scoped smart
 
 ## Install
 
-Review the revision you intend to use, then place this directory under your agent's supported skills directory, such as `.agents/skills/chain-analyst`. Keep `SKILL.md`, `helpers.sh`, `scripts/`, `references/`, and `assets/` together. The host should supply the loaded skill's absolute path; commands must not depend on a guessed installation location.
+Install with the [Vercel skills CLI](https://github.com/vercel-labs/skills):
 
-Installation and tool upgrades are explicit user actions. If using an external installer, pin both its version and the skill revision. The skill does not install missing dependencies automatically.
+```bash
+npx skills add lutr0/chain-analyst
+```
+
+The installer supports interactive skill and agent selection. List available skills, select named skills, or select all skills explicitly:
+
+```bash
+# Discover available skills without installing
+npx skills add lutr0/chain-analyst --list
+
+# Install a selected skill; repeat --skill to select a subset in a multi-skill repo
+npx skills add lutr0/chain-analyst --skill chain-analyst
+
+# Select all skills, while retaining agent-selection prompts
+npx skills add lutr0/chain-analyst --skill '*'
+```
+
+This repository currently publishes one skill, `chain-analyst`. Lookup, analysis, and audit are workflows within that skill, selected when it runs rather than separate installation choices. Avoid `--all` unless you also want installation to all agents without confirmation.
+
+Review the skill revision before installation. Installation and tool upgrades are explicit user actions; the skill does not install missing dependencies automatically. For manual installation, keep `SKILL.md`, `helpers.sh`, `scripts/`, `references/`, and `assets/` together in your agent's supported skills directory. The host should provide the loaded skill's absolute path.
 
 ## Workflows
 
