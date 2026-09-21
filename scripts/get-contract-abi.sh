@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set +x
 set -euo pipefail
 
 # Usage: get-contract-abi.sh <contract_address> [network]

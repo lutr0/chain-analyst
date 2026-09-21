@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set +x
 set -euo pipefail
 
 # Usage: analyze-tx.sh <tx_hash> [network]
@@ -75,7 +76,9 @@ CONTRACTS=$(echo "$RESULT" | jq -r '
     (.data[]?.transactions[]? | .to // empty),
     (.data[]?.logs[]? | .address // empty),
     (.data[]?.traces[]? | .to // empty)
-  ] | map(select(. != null and . != "")) | unique | .[]
+  ] | map(select(. != null and . != ""))
+  | if all(.[]; type == "string" and test("^0x[0-9a-fA-F]{40}$"))
+    then unique | .[] else error("Invalid contract address in HyperSync response") end
 ')
 
 echo "--- Step 2: Unique contracts found ---" >&2
@@ -84,8 +87,7 @@ echo "$CONTRACTS" | while read -r addr; do
 done
 
 echo "--- Step 3: Fetching ABIs ---" >&2
-ABI_DIR="$TMPDIR/chain-analyst-abis-$$"
-mkdir -p "$ABI_DIR"
+ABI_DIR=$(mktemp -d "$TMPDIR/chain-analyst-abis-XXXXXXXX")
 trap 'rm -rf "$ABI_DIR"' EXIT
 
 echo "$CONTRACTS" | while read -r addr; do

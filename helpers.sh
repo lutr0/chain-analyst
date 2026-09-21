@@ -46,6 +46,11 @@ load_env_safe() {
       [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] || continue
 
       key="${line%%=*}"
+      # Workspace files configure this skill, never the shell or its executables.
+      case "$key" in
+        HYPERSYNC_API_TOKEN|ETHERSCAN_API_KEY|COINGECKO_API_KEY|TYPESAFE_API_KEY|TYPESAFE_DEFAULT_MODEL) ;;
+        *) continue ;;
+      esac
       value="${line#*=}"
       value="$(trim_whitespace "$value")"
 
@@ -65,7 +70,7 @@ load_env_safe() {
 }
 
 curl_with_retries() {
-  curl --silent --show-error --fail-with-body \
+  curl -q --globoff --proto '=https' --max-redirs 0 --silent --show-error --fail-with-body \
     --retry "$CURL_RETRY" \
     --retry-delay "$CURL_RETRY_DELAY" \
     --connect-timeout "$CURL_CONNECT_TIMEOUT" \
@@ -85,6 +90,10 @@ redact_secret() {
 
 normalize_network_name() {
   local network="${1,,}"
+  if [[ ! "$network" =~ ^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$ ]]; then
+    printf '%s\n' 'ERROR: Network must be a DNS label, not a URL or path.' >&2
+    return 1
+  fi
   case "$network" in
     eth|mainnet|1) echo "ethereum" ;;
     op|10) echo "optimism" ;;
@@ -96,7 +105,7 @@ normalize_network_name() {
 # HyperSync: https://{name}.hypersync.xyz (ethereum uses "eth" subdomain)
 resolve_hypersync_url() {
   local net
-  net="$(normalize_network_name "$1")"
+  net="$(normalize_network_name "$1")" || return 1
   case "$net" in
     ethereum) echo "https://eth.hypersync.xyz" ;;
     *) echo "https://${net}.hypersync.xyz" ;;
@@ -106,7 +115,7 @@ resolve_hypersync_url() {
 # RPC: https://{name}.drpc.org (ethereum uses "eth" subdomain)
 resolve_rpc_url() {
   local net
-  net="$(normalize_network_name "$1")"
+  net="$(normalize_network_name "$1")" || return 1
   case "$net" in
     ethereum) echo "https://eth.drpc.org" ;;
     *) echo "https://${net}.drpc.org" ;;
@@ -116,7 +125,7 @@ resolve_rpc_url() {
 # Top-5 chain IDs hardcoded; pass numeric chain ID for others
 resolve_chain_id() {
   local net
-  net="$(normalize_network_name "$1")"
+  net="$(normalize_network_name "$1")" || return 1
   case "$net" in
     ethereum) echo "1" ;;
     base) echo "8453" ;;

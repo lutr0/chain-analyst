@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set +x
 set -euo pipefail
 
 # Usage: get-token-price.sh <coin_id> [currency] [date_dd-mm-yyyy]

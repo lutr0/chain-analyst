@@ -18,10 +18,9 @@ Docs: https://docs.coingecko.com/reference/introduction
 | Tier | Base URL | Auth Header |
 |------|----------|-------------|
 | Free (no key) | `https://api.coingecko.com/api/v3` | none |
-| Demo/Pro (key) | `https://pro-api.coingecko.com/api/v3` | `x-cg-pro-api-key: <KEY>` |
+| Pro (key) | `https://pro-api.coingecko.com/api/v3` | `x-cg-pro-api-key: <KEY>` |
 
-Free tier: ~10-30 req/min, no key needed. With a key, higher limits apply.
-The `get-token-price.sh` script auto-detects `COINGECKO_API_KEY` from `.env` and uses the Pro base URL when present.
+Limits depend on the provider plan. The `get-token-price.sh` script uses the public endpoint without a key and the Pro endpoint when `COINGECKO_API_KEY` is set. Supply a Pro key; Demo keys use a different authentication scheme and are not supported by this script.
 
 ## Current Price
 

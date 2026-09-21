@@ -1,4 +1,12 @@
 .env
-.env.local
+.env.*
+!.env.example
+.venv/
+node_modules/
+__pycache__/
+*.py[cod]
 *.tmp
 *.log
+/coverage/
+/skillspector*.json
+/*-skillspector-*.json

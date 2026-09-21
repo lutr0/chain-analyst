@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set +x
 set -euo pipefail
 
 # Queries HyperSync and paginates automatically until all matching data is retrieved.
@@ -17,6 +18,11 @@ SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$SKILL_DIR/helpers.sh"
 
 require_commands curl jq
+
+if [[ ! "$MAX_PAGES" =~ ^(0|[1-9][0-9]{0,8})$ ]]; then
+  echo 'ERROR: max_pages must be an integer from 0 through 999999999.' >&2
+  exit 1
+fi
 
 if [[ "$OUTPUT_MODE" != "stream" && "$OUTPUT_MODE" != "aggregate" ]]; then
   echo "ERROR: Invalid output mode '$OUTPUT_MODE'. Use 'stream' or 'aggregate'." >&2
@@ -67,6 +73,15 @@ while (( MAX_PAGES == 0 || page < MAX_PAGES )); do
     redact_secret "$RESPONSE" "$HYPERSYNC_API_TOKEN" >&2
     exit 1
   }
+
+  # Provider-controlled strings must never reach Bash arithmetic evaluation.
+  if ! printf '%s' "$RESPONSE" | jq -e '
+    def block: type == "number" and . >= 0 and . <= 9007199254740991 and . == floor;
+    type == "object" and (.next_block | . == null or block)
+      and (.archive_height | . == null or block)' >/dev/null; then
+    echo 'ERROR: Invalid HyperSync pagination metadata.' >&2
+    exit 1
+  fi
 
   if [[ "$OUTPUT_MODE" == "aggregate" ]]; then
     printf '%s\n' "$RESPONSE" > "$AGGREGATE_DIR/page-${page}.json"
