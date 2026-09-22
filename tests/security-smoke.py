@@ -111,6 +111,25 @@ cat '{self.response}'
         self.assertIn("https://base.hypersync.xyz/query", request)
         self.assertIn("Authorization: Bearer local-token", request)
 
+    def test_routing_uses_probability_not_confidence(self):
+        self.env["TYPESAFE_API_KEY"] = "test-key-not-a-secret"
+        (self.work / "request.json").write_text(json.dumps({
+            "request": "Review the lending protocol source and test its invariants.",
+        }))
+        cases = [
+            (0.77, {"audit": 0.83, "lookup": 0.08, "analysis": 0.06, "clarify": 0.03}, "audit"),
+            (1.0, {"audit": 0.55, "lookup": 0.15, "analysis": 0.25, "clarify": 0.05}, "clarify"),
+        ]
+        for confidence, probabilities, expected in cases:
+            with self.subTest(expected=expected):
+                self.response.write_text(json.dumps({"answers": {"route": {
+                    "type": "choice", "choice": "audit",
+                    "confidence": confidence, "probabilities": probabilities,
+                }}}))
+                result = self.run_cli("route-request.sh", "--jev", "request.json")
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(json.loads(result.stdout)["mode"], expected)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

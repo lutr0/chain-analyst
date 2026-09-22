@@ -87,14 +87,14 @@ ANSWER=$(printf '%s' "$RESPONSE" | jq -ces '
     then {choice,confidence,probabilities} else error("invalid answer") end
 ' 2>/dev/null) || fail 'Invalid TypeSafe routing response; no route selected.'
 
+# Confidence is metadata. A normalized 0.80 winner already leads every other
+# choice by at least 0.60, so no separate margin gate is needed.
 printf '%s' "$ANSWER" | jq '
   . as $answer
   | (.probabilities | to_entries | sort_by(.value) | reverse) as $ranked
   | (if .choice == "clarify" then "provider_clarify"
       elif .probabilities[.choice] < $ranked[0].value then "inconsistent_choice"
-      elif .confidence < 0.8 then "low_confidence"
       elif $ranked[0].value < 0.8 then "low_probability"
-      elif ($ranked[0].value - $ranked[1].value) < 0.2 then "close_distribution"
       else "jev_selected" end) as $reason
   | (if $reason == "jev_selected" then .choice else "clarify" end) as $mode
   | {mode:$mode, source:"jev", needs_clarification:($mode == "clarify"),
